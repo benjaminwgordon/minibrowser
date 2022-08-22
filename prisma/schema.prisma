@@ -1,0 +1,60 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id       Int    @id @default(autoincrement())
+  email    String @unique
+  username String
+  posts    Post[]
+  // add user avatars later after image uploading is resolved
+}
+
+model Post {
+  id          Int       @id @default(autoincrement())
+  title       String
+  content     String // This will eventually be an image, but uploading will come later
+  authorId    Int
+  author      User      @relation(fields: [authorId], references: [id])
+  miniatureId Int
+  model       Miniature @relation(fields: [miniatureId], references: [id])
+  isWIP       Boolean
+  recipeId    Int?
+  recipe      Recipe?   @relation(fields: [recipeId], references: [id])
+  blurb       String?
+  // consider adding comments in V2
+}
+
+model Miniature {
+  id                     Int     @id @default(autoincrement())
+  Post                   Post[]
+  publisher              String
+  isAvailableForPurchase Boolean
+  linkToStore            String?
+}
+
+model Recipe {
+  id              Int          @id @default(autoincrement())
+  Post            Post[]
+  steps           RecipeStep[]
+  difficultRating Int
+}
+
+model RecipeStep {
+  id              Int     @id @default(autoincrement())
+  recipeId        Int
+  recipe          Recipe  @relation(fields: [recipeId], references: [id])
+  technique       String?
+  paint           String?
+  brush           String?
+  description     String?
+  approximateTime Int?
+}
