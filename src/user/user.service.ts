@@ -32,9 +32,11 @@ export class UserService {
   }
 
   async createUser(data: Prisma.UserCreateInput): Promise<User> {
-    return this.prisma.user.create({
+    const user: User = await this.prisma.user.create({
       data,
     });
+    delete user.hash;
+    return user;
   }
 
   async updateUser(params: {
