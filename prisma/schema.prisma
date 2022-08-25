@@ -14,6 +14,7 @@ model User {
   id       Int    @id @default(autoincrement())
   email    String @unique
   username String @unique
+  hash     String
   posts    Post[]
   // add user avatars later after image uploading is resolved
 }
