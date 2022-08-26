@@ -1,5 +1,7 @@
-import { Injectable } from '@nestjs/common';
+import { ForbiddenException, Injectable } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
 import { User, Prisma } from '@prisma/client';
+import { PrismaClientKnownRequestError } from '@prisma/client/runtime';
 import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
@@ -29,14 +31,6 @@ export class UserService {
     return this.prisma.user.findUnique({
       where: userWhereUniqueInput,
     });
-  }
-
-  async createUser(data: Prisma.UserCreateInput): Promise<User> {
-    const user: User = await this.prisma.user.create({
-      data,
-    });
-    delete user.hash;
-    return user;
   }
 
   async updateUser(params: {
