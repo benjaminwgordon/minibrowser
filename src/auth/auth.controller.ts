@@ -1,4 +1,4 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import { Body, Controller, HttpCode, HttpStatus, Post } from '@nestjs/common';
 import { AuthDTO } from './dto/auth.dto';
 import { AuthService } from './auth.service';
 
@@ -11,6 +11,8 @@ export class AuthController {
     return this.AuthService.signup(dto);
   }
 
+  //override login 201 code with 200 code
+  @HttpCode(HttpStatus.OK)
   @Post('signin')
   signin(@Body() dto: AuthDTO) {
     return this.AuthService.signin(dto);
