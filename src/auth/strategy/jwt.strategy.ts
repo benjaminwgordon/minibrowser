@@ -20,7 +20,6 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
         id: payload.sub,
       },
     });
-    console.log({ user });
     // this object is appended to req.user, this delete avoids sending the hashed password down to the client
     delete user.hash;
     return user;
