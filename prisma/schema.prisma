@@ -22,7 +22,7 @@ model User {
 model Post {
   id          Int       @id @default(autoincrement())
   title       String
-  content     String // This will eventually be an image, but uploading will come later
+  content     String // This will eventually be an s3 bucket identifier, but uploading will come later
   authorId    Int
   author      User      @relation(fields: [authorId], references: [id])
   miniatureId Int

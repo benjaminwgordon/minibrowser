@@ -13,8 +13,8 @@ import { AuthGuard } from '@nestjs/passport';
 import { Request } from 'express';
 import { UserService } from './user.service';
 import { JwtGuard } from '../auth/guard/jwt.guard';
-import { GetUser } from 'src/auth/decorator';
 import { User } from '@prisma/client';
+import { GetUser } from '../auth/decorator';
 
 @Controller('user')
 export class UserController {
