@@ -1,0 +1,54 @@
+import { Injectable, NotFoundException, UseGuards } from '@nestjs/common';
+import { Post, User } from '@prisma/client';
+import { NotFoundError } from '@prisma/client/runtime';
+import { GetUser } from 'src/auth/decorator';
+import { PrismaService } from '../prisma/prisma.service';
+import { CreatePostDto } from './dto/createPost.dto';
+import { JwtGuard } from '../auth/guard/jwt.guard';
+
+@Injectable()
+export class PostService {
+  constructor(private prisma: PrismaService) {}
+
+  async create(user: User, dto: CreatePostDto): Promise<Post> {
+    const post = await this.prisma.post.create({
+      data: {
+        title: dto.title,
+        author: {
+          connect: { id: user.id },
+        },
+        content: dto.content,
+        description: dto.description,
+      },
+    });
+    return post;
+  }
+
+  async findAll(): Promise<Post[]> {
+    const posts = await this.prisma.post.findMany({});
+    return posts;
+  }
+
+  async findOne(id: number) {
+    try {
+      const post = await this.prisma.post.findUniqueOrThrow({
+        where: {
+          id,
+        },
+      });
+      return post;
+    } catch (error) {
+      if (error instanceof NotFoundError) {
+        throw new NotFoundException('no posts exist with id');
+      }
+    }
+  }
+
+  // // update(id: number, updatePostDto: UpdatePostDto) {
+  // //   return `This action updates a #${id} post`;
+  // // }
+
+  async remove(id: number) {
+    return `This action removes a #${id} post`;
+  }
+}
