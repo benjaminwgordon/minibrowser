@@ -5,6 +5,7 @@ import { GetUser } from 'src/auth/decorator';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreatePostDto } from './dto/createPost.dto';
 import { JwtGuard } from '../auth/guard/jwt.guard';
+import IPublicUserInfo from 'src/user/types/publicUser';
 
 @Injectable()
 export class PostService {

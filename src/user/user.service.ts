@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
-import { User, Prisma } from '@prisma/client';
+import { User, Prisma, Post } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
+import IPublicUserInfo from './types/publicUser';
 
 @Injectable()
 export class UserService {
@@ -25,9 +26,35 @@ export class UserService {
 
   async findOne(
     userWhereUniqueInput: Prisma.UserWhereUniqueInput,
-  ): Promise<User | null> {
+  ): Promise<IPublicUserInfo | null> {
     return this.prisma.user.findUnique({
       where: userWhereUniqueInput,
+      select: {
+        id: true,
+        username: true,
+      },
+    });
+  }
+
+  async findOneWithPosts(
+    userWhereUniqueInput: Prisma.UserWhereUniqueInput,
+  ): Promise<IPublicUserInfo & { posts: Post[] }> {
+    return this.prisma.user.findUnique({
+      where: userWhereUniqueInput,
+      select: {
+        id: true,
+        username: true,
+        posts: {
+          select: {
+            title: true,
+            content: true,
+            authorId: true,
+            author: true,
+            id: true,
+            description: true,
+          },
+        },
+      },
     });
   }
 
