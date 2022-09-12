@@ -49,7 +49,7 @@ export class UserService {
             title: true,
             content: true,
             authorId: true,
-            author: true,
+            author: false,
             id: true,
             description: true,
           },
