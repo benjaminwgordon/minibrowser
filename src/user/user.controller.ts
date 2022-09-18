@@ -1,4 +1,12 @@
-import { Controller, Get, Body, Param, UseGuards, Post } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Body,
+  Param,
+  UseGuards,
+  Post,
+  Query,
+} from '@nestjs/common';
 import { UserService } from './user.service';
 import { JwtGuard } from '../auth/guard/jwt.guard';
 import { User, Post as IPost } from '@prisma/client';
@@ -20,15 +28,28 @@ export class UserController {
     return user;
   }
 
-  @Get(':id/posts')
-  async findOneWithPosts(
-    @Param() params,
-  ): Promise<IPublicUserInfo & { posts: IPost[] }> {
-    return await this.userService.findOneWithPosts({ id: parseInt(params.id) });
+  @Get('search')
+  async findOneByUsernameSearch(
+    @Query() queryParams: { username: string },
+  ): Promise<IPublicUserInfo[]> {
+    return await this.userService.findMany({
+      select: { id: true, username: true },
+      where: { username: { contains: queryParams.username } },
+    });
   }
 
   @Get(':id')
   async findOne(@Param() params): Promise<IPublicUserInfo> {
     return await this.userService.findOne({ id: parseInt(params.id) });
+  }
+
+  @Get(':username/posts')
+  async findOneWithPosts(
+    @Param() params,
+  ): Promise<IPublicUserInfo & { posts: IPost[] }> {
+    console.log({ params });
+    return await this.userService.findOneWithPosts({
+      username: params.username,
+    });
   }
 }

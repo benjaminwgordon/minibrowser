@@ -12,16 +12,11 @@ export class UserService {
     take?: number;
     cursor?: Prisma.UserWhereUniqueInput;
     where?: Prisma.UserWhereInput;
-    orderBy?: Prisma.UserOrderByWithRelationInput;
+    orderBy?: Prisma.UserOrderByWithAggregationInput;
+    select?: Prisma.UserSelect;
   }): Promise<User[]> {
-    const { skip, take, cursor, where, orderBy } = params;
-    return this.prisma.user.findMany({
-      skip,
-      take,
-      cursor,
-      where,
-      orderBy,
-    });
+    const { skip, take, cursor, where, orderBy, select } = params;
+    return this.prisma.user.findMany(params);
   }
 
   async findOne(

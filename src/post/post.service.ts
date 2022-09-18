@@ -16,7 +16,9 @@ export class PostService {
       data: {
         title: dto.title,
         author: {
-          connect: { id: user.id },
+          connect: {
+            id: user.id,
+          },
         },
         content: dto.content,
         description: dto.description,
@@ -25,8 +27,24 @@ export class PostService {
     return post;
   }
 
-  async findAll(): Promise<Post[]> {
-    const posts = await this.prisma.post.findMany({});
+  async findAll(): Promise<
+    (Post & { author: { username: string; id: number } })[]
+  > {
+    const posts = await this.prisma.post.findMany({
+      select: {
+        id: true,
+        title: true,
+        content: true,
+        description: true,
+        authorId: true,
+        author: {
+          select: {
+            username: true,
+            id: true,
+          },
+        },
+      },
+    });
     return posts;
   }
 
