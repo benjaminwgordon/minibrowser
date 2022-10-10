@@ -8,10 +8,8 @@ export class CreatePostDto {
 
   @IsNotEmpty()
   @IsString()
-  content: string;
-
-  @IsNotEmpty()
-  @IsString()
   @Length(1, 255)
   description: string;
+
+  file: Express.Multer.File;
 }

@@ -1,12 +1,9 @@
 import { Injectable, NotFoundException, UseGuards } from '@nestjs/common';
 import { Post, User } from '@prisma/client';
 import { NotFoundError } from '@prisma/client/runtime';
-import { GetUser } from 'src/auth/decorator';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreatePostDto } from './dto/createPost.dto';
-import { JwtGuard } from '../auth/guard/jwt.guard';
-import IPublicUserInfo from 'src/user/types/publicUser';
-import AWS from 'aws-sdk';
+import * as argon from 'argon2';
 
 @Injectable()
 export class PostService {
@@ -18,6 +15,8 @@ export class PostService {
     file: Express.Multer.File,
   ): Promise<Post> {
     // first, try to upload file to s3, if this fails do not create the associated entry in the database
+
+    const AWS = require('aws-sdk');
     const s3 = new AWS.S3({
       accessKeyId: process.env.AWS_S3_ACCESS_KEY_ID,
       secretAccessKey: process.env.AWS_S3_SECRET_ACCESS_KEY,
@@ -26,28 +25,31 @@ export class PostService {
     const uploadedImage = await s3
       .upload({
         Bucket: process.env.AWS_S3_BUCKET_NAME,
-        Key: file.originalname,
+        Key: await argon.hash(user.username + file.originalname),
         Body: file.buffer,
       })
       .promise();
 
     console.log({ uploadedImage });
 
-    // if the image upload to s3 succeeds, create the post in the db
-
-    const post = await this.prisma.post.create({
-      data: {
-        title: dto.title,
-        author: {
-          connect: {
-            id: user.id,
+    if (uploadedImage && uploadedImage.Location) {
+      // if the image upload to s3 succeeds, create the post in the db
+      const post = await this.prisma.post.create({
+        data: {
+          title: dto.title,
+          author: {
+            connect: {
+              id: user.id,
+            },
           },
+          content: uploadedImage.Location,
+          description: dto.description,
         },
-        content: dto.content,
-        description: dto.description,
-      },
-    });
-    return post;
+      });
+      return post;
+    } else {
+      throw new Error('unable to upload image');
+    }
   }
 
   async findAll(): Promise<
@@ -76,6 +78,19 @@ export class PostService {
       const post = await this.prisma.post.findUniqueOrThrow({
         where: {
           id,
+        },
+        select: {
+          id: true,
+          title: true,
+          content: true,
+          description: true,
+          authorId: true,
+          author: {
+            select: {
+              username: true,
+              id: true,
+            },
+          },
         },
       });
       return post;

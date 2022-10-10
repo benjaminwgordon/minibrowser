@@ -44,7 +44,12 @@ export class UserService {
             title: true,
             content: true,
             authorId: true,
-            author: false,
+            author: {
+              select: {
+                username: true,
+                id: true,
+              },
+            },
             id: true,
             description: true,
           },

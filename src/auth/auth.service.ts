@@ -7,6 +7,8 @@ import { User } from '@prisma/client';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime';
 import { ConfigService } from '@nestjs/config';
 import { AuthSignInDTO } from './dto/authSignIn.dto';
+import { Response, Request } from 'express';
+import jwt_decode from 'jwt-decode';
 
 @Injectable()
 export class AuthService {
@@ -38,8 +40,7 @@ export class AuthService {
     }
   }
 
-  async signin(dto: AuthSignInDTO) {
-    console.log({ dto });
+  async signin(dto: AuthSignInDTO, res: Response) {
     const user = await this.prisma.user.findUnique({
       where: {
         email: dto.email,
@@ -58,13 +59,26 @@ export class AuthService {
       throw new ForbiddenException('Incorrect Credentials');
     }
 
-    return this.signToken(user.id, user.email);
+    const authToken = await this.signToken(user.id, user.email, '15m');
+    const refreshToken = await this.signToken(user.id, user.email, '30d');
+
+    const future = new Date();
+    future.setDate(future.getDate() + 30);
+
+    res.cookie('refreshToken', refreshToken, {
+      expires: future,
+      httpOnly: true,
+      secure: false,
+    });
+
+    res.send({ access_token: authToken });
   }
 
   async signToken(
     userId: number,
     email: string,
-  ): Promise<{ access_token: string }> {
+    expiresIn: string,
+  ): Promise<string> {
     const payload = {
       sub: userId,
       email,
@@ -73,12 +87,60 @@ export class AuthService {
     const secret = this.config.get('JWT_SECRET');
 
     const token = await this.jwt.signAsync(payload, {
-      expiresIn: '15m',
+      expiresIn,
       secret,
     });
 
-    return {
-      access_token: token,
-    };
+    return token;
+  }
+
+  async refreshToken(request: Request, response: Response) {
+    const priorRefreshToken = request.cookies['refreshToken'];
+
+    interface IJwt {
+      email: string;
+      exp: string;
+    }
+
+    const decodedRefreshToken = jwt_decode(priorRefreshToken) as IJwt;
+    const userEmail = decodedRefreshToken.email;
+    const expirationTime = parseInt(decodedRefreshToken.exp);
+
+    const date = new Date();
+    const currentTime = Math.floor(date.getTime() / 1000);
+
+    if (currentTime > expirationTime) {
+      throw new ForbiddenException(
+        'refresh token expired, sign in again to continue',
+      );
+    }
+
+    const user = await this.prisma.user.findUnique({
+      where: { email: userEmail },
+      select: {
+        id: true,
+        username: true,
+        email: true,
+      },
+    });
+
+    // if refreshToken is not expired and matches a valid user, issue a new authToken and refreshToken
+    if (!user) {
+      throw new ForbiddenException('no user found matches this refresh token');
+    }
+
+    const newAuthToken = await this.signToken(user.id, user.email, '15m');
+    const newRefreshToken = await this.signToken(user.id, user.email, '30d');
+
+    const future = new Date();
+    future.setDate(future.getDate() + 30);
+
+    response.cookie('refreshToken', newRefreshToken, {
+      expires: future,
+      httpOnly: true,
+      secure: false,
+    });
+
+    response.send({ access_token: newAuthToken });
   }
 }
