@@ -21,11 +21,11 @@ model User {
 }
 
 model Post {
-  id          Int     @id @default(autoincrement())
+  id          Int           @id @default(autoincrement())
   title       String
-  content     String // This will eventually be an s3 bucket identifier, but uploading will come later
+  content     String
   authorId    Int
-  author      User    @relation(fields: [authorId], references: [id])
+  author      User          @relation(fields: [authorId], references: [id])
   // miniatureId Int
   //model       Miniature @relation(fields: [miniatureId], references: [id])
   // isWIP       Boolean
@@ -33,6 +33,22 @@ model Post {
   // recipe      Recipe? @relation(fields: [recipeId], references: [id])
   description String?
   // consider adding comments in V2
+  TagsOnPosts TagsOnPosts[]
+}
+
+model Tag {
+  id          Int           @id @default(autoincrement())
+  name        String
+  TagsOnPosts TagsOnPosts[]
+}
+
+model TagsOnPosts {
+  postId Int
+  post   Post @relation(fields: [postId], references: [id])
+  tagId  Int
+  tag    Tag  @relation(fields: [tagId], references: [id])
+
+  @@id([postId, tagId])
 }
 
 // model Miniature {
