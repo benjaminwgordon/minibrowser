@@ -52,6 +52,7 @@ export class PostService {
     }
   }
 
+  // TODO: paginate for performance
   async findAll(): Promise<
     (Post & { author: { username: string; id: number } })[]
   > {

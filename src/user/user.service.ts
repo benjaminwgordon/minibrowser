@@ -15,7 +15,6 @@ export class UserService {
     orderBy?: Prisma.UserOrderByWithAggregationInput;
     select?: Prisma.UserSelect;
   }): Promise<User[]> {
-    const { skip, take, cursor, where, orderBy, select } = params;
     return this.prisma.user.findMany(params);
   }
 
