@@ -53,9 +53,9 @@ export class PostService {
   }
 
   // TODO: paginate for performance
-  async findAll(): Promise<
-    (Post & { author: { username: string; id: number } })[]
-  > {
+  async findAll(
+    tagId?: number,
+  ): Promise<(Post & { author: { username: string; id: number } })[]> {
     const posts = await this.prisma.post.findMany({
       select: {
         id: true,
@@ -67,6 +67,28 @@ export class PostService {
           select: {
             username: true,
             id: true,
+          },
+        },
+      },
+    });
+    return posts;
+  }
+
+  async findAllByTag(
+    tagId?: number,
+  ): Promise<(Post & { author: { username: string; id: number } })[]> {
+    if (typeof tagId === 'string') {
+      tagId = parseInt(tagId);
+    }
+    const posts = await this.prisma.post.findMany({
+      include: {
+        TagsOnPosts: true,
+        author: true,
+      },
+      where: {
+        TagsOnPosts: {
+          some: {
+            tagId: tagId,
           },
         },
       },

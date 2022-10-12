@@ -9,6 +9,7 @@ import {
   UseGuards,
   UseInterceptors,
   UploadedFile,
+  Query,
 } from '@nestjs/common';
 import { PostService } from './post.service';
 import { CreatePostDto } from './dto/createPost.dto';
@@ -30,6 +31,11 @@ export class PostController {
     @Body() createPostDto: CreatePostDto,
   ) {
     return this.postService.create(user, createPostDto, file);
+  }
+
+  @Get('filterByTag')
+  findAllByTag(@Query('tagId') tagId) {
+    return this.postService.findAllByTag(tagId);
   }
 
   @Get()

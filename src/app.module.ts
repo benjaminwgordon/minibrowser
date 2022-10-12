@@ -8,6 +8,7 @@ import { AuthModule } from './auth/auth.module';
 import { ConfigModule } from '@nestjs/config';
 import { PostModule } from './post/post.module';
 import { TagModule } from './tag/tag.module';
+import { PostTagModule } from './post-tag/post-tag.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { TagModule } from './tag/tag.module';
     }),
     PostModule,
     TagModule,
+    PostTagModule,
   ],
   controllers: [AppController],
   providers: [AppService, PrismaService],
