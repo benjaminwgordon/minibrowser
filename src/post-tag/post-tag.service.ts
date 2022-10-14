@@ -24,8 +24,16 @@ export class PostTagService {
     return postWithTags;
   }
 
-  findAll() {
-    return `This action returns all postTag`;
+  findAll(postId: number) {
+    const tags = this.prisma.tagsOnPosts.findMany({
+      where: {
+        postId: postId,
+      },
+      include: {
+        tag: true,
+      },
+    });
+    return tags;
   }
 
   findOne(id: number) {

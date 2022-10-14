@@ -7,10 +7,12 @@ import {
   Param,
   Delete,
   Query,
+  ParseIntPipe,
 } from '@nestjs/common';
 import { TagService } from './tag.service';
 import { CreateTagDto } from './dto/create-tag.dto';
 import { UpdateTagDto } from './dto/update-tag.dto';
+import { query } from 'express';
 
 @Controller('tag')
 export class TagController {
@@ -19,6 +21,11 @@ export class TagController {
   @Post()
   create(@Body() createTagDto: CreateTagDto) {
     return this.tagService.create(createTagDto);
+  }
+
+  @Get('top')
+  findTop(@Query('take', ParseIntPipe) take: number) {
+    return this.tagService.maxTagsByPostCount();
   }
 
   @Get()

@@ -6,6 +6,7 @@ import {
   Patch,
   Param,
   Delete,
+  ParseIntPipe,
 } from '@nestjs/common';
 import { PostTagService } from './post-tag.service';
 import { CreatePostTagDto } from './dto/create-post-tag.dto';
@@ -23,9 +24,10 @@ export class PostTagController {
     return this.postTagService.createMany(postId, createPostTagDto);
   }
 
+  // find all tags associated with post
   @Get()
-  findAll() {
-    return this.postTagService.findAll();
+  findAll(@Param('postId', ParseIntPipe) postId: number) {
+    return this.postTagService.findAll(postId);
   }
 
   @Delete(':id')

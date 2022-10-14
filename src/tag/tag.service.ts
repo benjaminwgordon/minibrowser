@@ -39,6 +39,39 @@ export class TagService {
     return this.prisma.tag.findMany(params);
   }
 
+  /**
+   *
+   * @param take number of tags to return
+   * @returns
+   */
+  async maxTagsByPostCount(take?: number): Promise<Tag[]> {
+    // TODO: relational queries inside groupBy statements seem to not be possible, resulting in a  two step query.  Revisit at a later date to identify single-query methods to get same behavior
+    const maxTagsOnPostsByPostCount = await this.prisma.tagsOnPosts.groupBy({
+      by: ['tagId'],
+      _count: {
+        postId: true,
+      },
+      orderBy: {
+        _count: {
+          postId: 'desc',
+        },
+      },
+      take: take ? take : 10,
+    });
+
+    const ids = maxTagsOnPostsByPostCount.map((postTag) => postTag.tagId);
+
+    const maxTagsByPostCount = this.prisma.tag.findMany({
+      where: {
+        id: {
+          in: ids,
+        },
+      },
+    });
+
+    return maxTagsByPostCount;
+  }
+
   findOne(id: number) {
     return `This action returns a #${id} tag`;
   }

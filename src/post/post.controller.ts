@@ -33,15 +33,19 @@ export class PostController {
     return this.postService.create(user, createPostDto, file);
   }
 
-  @Get('filterByTag')
+  @Get()
   findAllByTag(@Query('tagId') tagId) {
-    return this.postService.findAllByTag(tagId);
+    if (tagId) {
+      return this.postService.findAllByTag(tagId);
+    } else {
+      return this.postService.findAll();
+    }
   }
 
-  @Get()
-  findAll() {
-    return this.postService.findAll();
-  }
+  // @Get()
+  // findAll() {
+  //   return this.postService.findAll();
+  // }
 
   @Get(':id')
   findOne(@Param('id') id: string) {
