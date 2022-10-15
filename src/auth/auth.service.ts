@@ -1,14 +1,20 @@
-import { ForbiddenException, Injectable } from '@nestjs/common';
+import {
+  ForbiddenException,
+  HttpStatus,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { AuthDTO } from './dto/auth.dto';
 import * as argon from 'argon2';
 import { JwtService } from '@nestjs/jwt';
-import { User } from '@prisma/client';
+import { pendingUser, User } from '@prisma/client';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime';
 import { ConfigService } from '@nestjs/config';
 import { AuthSignInDTO } from './dto/authSignIn.dto';
 import { Response, Request } from 'express';
 import jwt_decode from 'jwt-decode';
+import { AuthEmailValidationDto } from './dto/authEmailValidation.dto';
 
 @Injectable()
 export class AuthService {
@@ -18,16 +24,30 @@ export class AuthService {
     private config: ConfigService,
   ) {}
 
+  // creates a new pending user, adding them to the list of pending users awaiting email confirmation
   async signup(dto: AuthDTO) {
     const hash = await argon.hash(dto.password);
+    var crypto = require('crypto');
+    const confirmationCode = crypto.randomBytes(6).toString('hex');
     try {
-      const user: User = await this.prisma.user.create({
-        data: {
-          username: dto.username,
+      const user: User = await this.prisma.pendingUser.upsert({
+        where: {
           email: dto.email,
+        },
+        update: {
+          confirmationCode: confirmationCode,
           hash,
         },
+        create: {
+          email: dto.email,
+          username: dto.username,
+          hash: hash,
+          confirmationCode: confirmationCode,
+        },
       });
+
+      this.sendConfirmationEmail(dto.username, dto.email, confirmationCode);
+
       delete user.hash;
       return user;
     } catch (error) {
@@ -37,6 +57,86 @@ export class AuthService {
           throw new ForbiddenException('credentials taken');
         }
       }
+    }
+  }
+
+  // sends an email to confirm email account ownership
+  async sendConfirmationEmail(
+    username: string,
+    userEmail: string,
+    confirmationCode: string,
+  ) {
+    let mailOptions = {
+      from: process.env.MAIL_USERNAME,
+      to: userEmail,
+      subject: 'Confirm your MiniBrowser Account',
+      text: `Welcome to MiniBrowser!
+      \n
+      Here is your activation code:\n
+      ${confirmationCode}`,
+    };
+
+    const nodemailer = require('nodemailer');
+
+    let transporter = nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        type: 'OAuth2',
+        user: process.env.MAIL_USERNAME,
+        pass: process.env.MAIL_PASSWORD,
+        clientId: process.env.OAUTH_CLIENTID,
+        clientSecret: process.env.OAUTH_CLIENT_SECRET,
+        refreshToken: process.env.OAUTH_REFRESH_TOKEN,
+      },
+    });
+
+    transporter.sendMail(mailOptions, (err, data) => {
+      if (err) {
+        console.log({ err });
+      } else {
+        console.log({ msg: `Sent email successfully` });
+      }
+    });
+  }
+
+  // fired when a user clicks an email confirmation link.  If valid, converts the user from a pending user into a full user
+  async validateEmail(dto: AuthEmailValidationDto) {
+    const { email, confirmationCode } = dto;
+    console.log({ dto });
+    try {
+      const user: pendingUser = await this.prisma.pendingUser.findUniqueOrThrow(
+        {
+          where: {
+            email: email,
+          },
+        },
+      );
+      console.log({
+        serverCode: user.confirmationCode,
+        clientCode: dto.confirmationCode,
+      });
+      if (user.confirmationCode !== confirmationCode) {
+        throw new ForbiddenException('Invalid code');
+      } else {
+        // remove user from PendingUsers and append to Users
+        const removedUser = await this.prisma.pendingUser.delete({
+          where: {
+            email: user.email,
+          },
+        });
+
+        const addedUser = await this.prisma.user.create({
+          data: {
+            email: removedUser.email,
+            username: removedUser.username,
+            hash: removedUser.hash,
+          },
+        });
+
+        return HttpStatus.ACCEPTED;
+      }
+    } catch (error) {
+      console.log(error);
     }
   }
 

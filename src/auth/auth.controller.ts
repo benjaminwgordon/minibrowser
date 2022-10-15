@@ -12,6 +12,7 @@ import { AuthDTO } from './dto/auth.dto';
 import { AuthService } from './auth.service';
 import { AuthSignInDTO } from './dto/authSignIn.dto';
 import { Response, Request } from 'express';
+import { AuthEmailValidationDto } from './dto/authEmailValidation.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -20,6 +21,11 @@ export class AuthController {
   @Post('signup')
   signup(@Body() dto: AuthDTO) {
     return this.AuthService.signup(dto);
+  }
+
+  @Post('validateEmail')
+  validateEmail(@Body() dto: AuthEmailValidationDto) {
+    return this.AuthService.validateEmail(dto);
   }
 
   //override login 201 code with 200 code

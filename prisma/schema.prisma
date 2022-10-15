@@ -20,6 +20,14 @@ model User {
   // add user avatars later after image uploading is resolved
 }
 
+model pendingUser {
+  id               Int    @id @default(autoincrement())
+  email            String @unique
+  username         String @unique
+  hash             String
+  confirmationCode String
+}
+
 model Post {
   id          Int           @id @default(autoincrement())
   title       String
