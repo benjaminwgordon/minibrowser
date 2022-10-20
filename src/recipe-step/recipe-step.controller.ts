@@ -1,30 +1,36 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Param,
+  Delete,
+  ParseIntPipe,
+  UseGuards,
+} from '@nestjs/common';
 import { RecipeStepService } from './recipe-step.service';
-import { CreateRecipeStepDto } from './dto/create-recipe-step.dto';
-import { UpdateRecipeStepDto } from './dto/update-recipe-step.dto';
+import { CreateRecipeStepsDto } from './dto/create-recipe-steps.dto';
+import { GetUser } from 'src/auth/decorator';
+import { User } from '@prisma/client';
+import { JwtGuard } from '../auth/guard/jwt.guard';
 
-@Controller('recipe-step')
+@UseGuards(JwtGuard)
+@Controller('recipe/:recipeId/recipe-step')
 export class RecipeStepController {
   constructor(private readonly recipeStepService: RecipeStepService) {}
 
   @Post()
-  create(@Body() createRecipeStepDto: CreateRecipeStepDto) {
-    return this.recipeStepService.create(createRecipeStepDto);
+  create(
+    @GetUser() user: User,
+    @Param('recipeId', ParseIntPipe) recipeId: number,
+    @Body() createRecipeStepsDto: CreateRecipeStepsDto,
+  ) {
+    return this.recipeStepService.create(user, recipeId, createRecipeStepsDto);
   }
 
   @Get()
-  findAll() {
-    return this.recipeStepService.findAll();
-  }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.recipeStepService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateRecipeStepDto: UpdateRecipeStepDto) {
-    return this.recipeStepService.update(+id, updateRecipeStepDto);
+  findAll(@Param('recipeId', ParseIntPipe) recipeId: number) {
+    return this.recipeStepService.findAll(recipeId);
   }
 
   @Delete(':id')

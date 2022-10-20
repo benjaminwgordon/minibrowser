@@ -1,7 +1,3 @@
 import { IsNotEmpty, IsNumber, IsNumberString } from 'class-validator';
 
-export class CreateRecipeDto {
-  @IsNotEmpty()
-  @IsNumberString()
-  postId: string;
-}
+export class CreateRecipeDto {}
