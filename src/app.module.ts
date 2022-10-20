@@ -10,6 +10,8 @@ import { PostModule } from './post/post.module';
 import { TagModule } from './tag/tag.module';
 import { PostTagModule } from './post-tag/post-tag.module';
 import { UserTagSubscriptionModule } from './user-tag-subscription/user-tag-subscription.module';
+import { RecipeModule } from './recipe/recipe.module';
+import { RecipeStepModule } from './recipe-step/recipe-step.module';
 
 @Module({
   imports: [
@@ -23,6 +25,8 @@ import { UserTagSubscriptionModule } from './user-tag-subscription/user-tag-subs
     TagModule,
     PostTagModule,
     UserTagSubscriptionModule,
+    RecipeModule,
+    RecipeStepModule,
   ],
   controllers: [AppController],
   providers: [AppService, PrismaService],
