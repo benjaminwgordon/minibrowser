@@ -96,6 +96,39 @@ export class PostService {
     return posts;
   }
 
+  async findAllBySubscribedTags(
+    user: User,
+  ): Promise<(Post & { author: { username: string; id: number } })[]> {
+    const userSubscribedTags = await this.prisma.userTagSubscriptions.findMany({
+      where: {
+        userId: user.id,
+      },
+      select: {
+        tagId: true,
+      },
+    });
+
+    const userSubscribedTagIds = userSubscribedTags.map((tag) => tag.tagId);
+
+    const postsBySubscribedTags = this.prisma.post.findMany({
+      where: {
+        TagsOnPosts: {
+          some: {
+            tagId: {
+              in: userSubscribedTagIds,
+            },
+          },
+        },
+      },
+      include: {
+        TagsOnPosts: true,
+        author: true,
+      },
+    });
+
+    return postsBySubscribedTags;
+  }
+
   async findOne(id: number) {
     try {
       const post = await this.prisma.post.findUniqueOrThrow({

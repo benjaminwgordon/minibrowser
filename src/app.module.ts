@@ -9,6 +9,7 @@ import { ConfigModule } from '@nestjs/config';
 import { PostModule } from './post/post.module';
 import { TagModule } from './tag/tag.module';
 import { PostTagModule } from './post-tag/post-tag.module';
+import { UserTagSubscriptionModule } from './user-tag-subscription/user-tag-subscription.module';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { PostTagModule } from './post-tag/post-tag.module';
     PostModule,
     TagModule,
     PostTagModule,
+    UserTagSubscriptionModule,
   ],
   controllers: [AppController],
   providers: [AppService, PrismaService],

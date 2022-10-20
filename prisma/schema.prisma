@@ -12,12 +12,13 @@ datasource db {
 }
 
 model User {
-  id       Int    @id @default(autoincrement())
-  email    String @unique
-  username String @unique
-  hash     String
-  posts    Post[]
+  id                   Int                    @id @default(autoincrement())
+  email                String                 @unique
+  username             String                 @unique
+  hash                 String
+  posts                Post[]
   // add user avatars later after image uploading is resolved
+  UserTagSubscriptions UserTagSubscriptions[]
 }
 
 model pendingUser {
@@ -45,9 +46,10 @@ model Post {
 }
 
 model Tag {
-  id          Int           @id @default(autoincrement())
-  name        String        @unique
-  TagsOnPosts TagsOnPosts[]
+  id                   Int                    @id @default(autoincrement())
+  name                 String                 @unique
+  TagsOnPosts          TagsOnPosts[]
+  UserTagSubscriptions UserTagSubscriptions[]
 }
 
 model TagsOnPosts {
@@ -59,28 +61,11 @@ model TagsOnPosts {
   @@id([postId, tagId])
 }
 
-// model Miniature {
-//   id                     Int     @id @default(autoincrement())
-//   Post                   Post[]
-//   publisher              String
-//   isAvailableForPurchase Boolean
-//   linkToStore            String?
-// }
+model UserTagSubscriptions {
+  userId Int
+  user   User @relation(fields: [userId], references: [id])
+  tagId  Int
+  tag    Tag  @relation(fields: [tagId], references: [id])
 
-// model Recipe {
-//   id              Int          @id @default(autoincrement())
-//   Post            Post[]
-//   steps           RecipeStep[]
-//   difficultRating Int
-// }
-
-// model RecipeStep {
-//   id              Int     @id @default(autoincrement())
-//   recipeId        Int
-//   recipe          Recipe  @relation(fields: [recipeId], references: [id])
-//   technique       String?
-//   paint           String?
-//   brush           String?
-//   description     String?
-//   approximateTime Int?
-// }
+  @@id([userId, tagId])
+}

@@ -73,7 +73,11 @@ export class TagService {
   }
 
   findOne(id: number) {
-    return `This action returns a #${id} tag`;
+    return this.prisma.tag.findUnique({
+      where: {
+        id: id,
+      },
+    });
   }
 
   update(id: number, updateTagDto: UpdateTagDto) {

@@ -34,18 +34,24 @@ export class PostController {
   }
 
   @Get()
-  findAllByTag(@Query('tagId') tagId) {
+  findAll(
+    @GetUser() user: User,
+    @Query('tagId') tagId,
+    @Query('subscribedTags') subscribedTags,
+  ) {
     if (tagId) {
+      console.log({ tagId });
+      console.log({ subscribedTags });
+      console.log('fetching one post by id');
       return this.postService.findAllByTag(tagId);
+    } else if (subscribedTags) {
+      console.log('fetching all posts by subscribed tags');
+      return this.postService.findAllBySubscribedTags(user);
     } else {
+      console.log('fetching all posts');
       return this.postService.findAll();
     }
   }
-
-  // @Get()
-  // findAll() {
-  //   return this.postService.findAll();
-  // }
 
   @Get(':id')
   findOne(@Param('id') id: string) {
