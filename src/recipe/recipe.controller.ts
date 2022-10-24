@@ -10,8 +10,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { RecipeService } from './recipe.service';
-import { CreateRecipeDto } from './dto/create-recipe.dto';
-import { UpdateRecipeDto } from './dto/update-recipe.dto';
+import { CreateRecipeWithStepsDto } from './dto/create-recipe.dto';
 import { JwtGuard } from '../auth/guard/jwt.guard';
 
 @UseGuards(JwtGuard)
@@ -22,9 +21,9 @@ export class RecipeController {
   @Post()
   create(
     @Param('postId', ParseIntPipe) postId: number,
-    @Body() createRecipeDto: CreateRecipeDto,
+    @Body() createRecipeWithStepsDto: CreateRecipeWithStepsDto,
   ) {
-    return this.recipeService.create(postId, createRecipeDto);
+    return this.recipeService.create(postId, createRecipeWithStepsDto);
   }
 
   @Get()

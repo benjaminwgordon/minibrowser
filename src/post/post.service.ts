@@ -70,6 +70,9 @@ export class PostService {
           },
         },
       },
+      orderBy: {
+        id: 'desc',
+      },
     });
     return posts;
   }

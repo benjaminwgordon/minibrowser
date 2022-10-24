@@ -1,8 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { Recipe } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { CreateRecipeDto } from './dto/create-recipe.dto';
-import { UpdateRecipeDto } from './dto/update-recipe.dto';
+import { CreateRecipeWithStepsDto } from './dto/create-recipe.dto';
 
 @Injectable()
 export class RecipeService {
@@ -10,15 +9,31 @@ export class RecipeService {
 
   async create(
     postId: number,
-    createRecipeDto: CreateRecipeDto,
-  ): Promise<Recipe> {
-    console.log({ createRecipeDto });
-    const newRecipe = await this.prisma.recipe.create({
-      data: {
-        postId,
-      },
-    });
-    return newRecipe;
+    createRecipeWithStepsDto: CreateRecipeWithStepsDto,
+  ): Promise<any> {
+    // THIS IS SLOW, but prisma but not yet support nested writes with createMany
+    const allRecipesWithSteps = await Promise.all(
+      createRecipeWithStepsDto.recipes.map(async (recipe) => {
+        const { recipeFor, steps } = recipe;
+        const recipeWithSteps = await this.prisma.recipe.create({
+          data: {
+            post: {
+              connect: { id: postId },
+            },
+            recipeFor,
+            RecipeStep: {
+              create: steps,
+            },
+          },
+          include: {
+            RecipeStep: true,
+          },
+        });
+        return recipeWithSteps;
+      }),
+    );
+    console.log({ allRecipesWithSteps });
+    return allRecipesWithSteps;
   }
 
   async findAll(postId: number) {

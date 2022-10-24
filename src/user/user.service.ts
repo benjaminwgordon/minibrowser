@@ -52,6 +52,9 @@ export class UserService {
             id: true,
             description: true,
           },
+          orderBy: {
+            id: 'desc',
+          },
         },
       },
     });
