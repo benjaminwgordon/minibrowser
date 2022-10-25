@@ -11,8 +11,8 @@ services:
     networks:
       - nest
     volumes:
-      - minibrowser-db:/var/lib/postgresql/data
+      - minibrowser-db-prod:/var/lib/postgresql/data
 volumes:
-  minibrowser-db:
+  minibrowser-db-prod:
 networks:
   nest:
