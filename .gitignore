@@ -38,4 +38,5 @@ lerna-debug.log*
 .env
 
 # gcloud deployment
-*.app.yaml
+app.yaml
+.gcloudignore
