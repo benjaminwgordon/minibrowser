@@ -74,9 +74,9 @@ export class AuthService {
       from: 'miniaturesbrowser@gmail.com', // Change to your verified sender
       subject: 'Confirm your MiniBrowser Account',
       text: `Welcome to MiniBrowser!
-      //   \n
-      //   Here is your activation code:\n
-      //   ${confirmationCode}`,
+         \n
+         Here is your activation code:\n
+         ${confirmationCode}`,
     };
 
     sgMail
