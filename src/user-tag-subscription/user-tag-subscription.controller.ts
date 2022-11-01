@@ -13,8 +13,8 @@ import { UserTagSubscriptionService } from './user-tag-subscription.service';
 import { CreateUserTagSubscriptionDto } from './dto/create-user-tag-subscription.dto';
 import { UpdateUserTagSubscriptionDto } from './dto/update-user-tag-subscription.dto';
 import { JwtGuard } from '../auth/guard/jwt.guard';
-import { GetUser } from 'src/auth/decorator';
 import { User } from '@prisma/client';
+import { GetUser } from '../auth/decorator';
 
 @UseGuards(JwtGuard)
 @Controller('tags/subscribed')

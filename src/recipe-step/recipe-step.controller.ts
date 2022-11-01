@@ -10,9 +10,9 @@ import {
 } from '@nestjs/common';
 import { RecipeStepService } from './recipe-step.service';
 import { CreateRecipeStepsDto } from './dto/create-recipe-steps.dto';
-import { GetUser } from 'src/auth/decorator';
 import { User } from '@prisma/client';
 import { JwtGuard } from '../auth/guard/jwt.guard';
+import { GetUser } from '../auth/decorator';
 
 @UseGuards(JwtGuard)
 @Controller('recipe/:recipeId/recipe-step')

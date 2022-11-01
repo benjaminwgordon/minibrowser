@@ -4,7 +4,6 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { PrismaService } from 'src/prisma/prisma.service';
 import { AuthDTO } from './dto/auth.dto';
 import * as argon from 'argon2';
 import { JwtService } from '@nestjs/jwt';
@@ -15,6 +14,7 @@ import { AuthSignInDTO } from './dto/authSignIn.dto';
 import { Response, Request } from 'express';
 import jwt_decode from 'jwt-decode';
 import { AuthEmailValidationDto } from './dto/authEmailValidation.dto';
+import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
 export class AuthService {
@@ -196,6 +196,12 @@ export class AuthService {
 
   async refreshToken(request: Request, response: Response) {
     const priorRefreshToken = request.cookies['refreshToken'];
+
+    if (!priorRefreshToken) {
+      throw new ForbiddenException(
+        'refresh token not set, sign in again to continue',
+      );
+    }
 
     interface IJwt {
       email: string;

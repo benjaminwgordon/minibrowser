@@ -9,11 +9,7 @@ import * as argon from 'argon2';
 export class PostService {
   constructor(private prisma: PrismaService) {}
 
-  async create(
-    user: User,
-    dto: CreatePostDto,
-    file: Express.Multer.File,
-  ): Promise<Post> {
+  async create(user: User, dto: CreatePostDto, file: any): Promise<Post> {
     // first, try to upload file to s3, if this fails do not create the associated entry in the database
 
     const AWS = require('aws-sdk');

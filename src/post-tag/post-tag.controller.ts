@@ -12,7 +12,7 @@ import {
 import { PostTagService } from './post-tag.service';
 import { CreatePostTagDto } from './dto/create-post-tag.dto';
 import { UpdatePostTagDto } from './dto/update-post-tag.dto';
-import { JwtGuard } from 'src/auth/guard/jwt.guard';
+import { JwtGuard } from '../auth/guard/jwt.guard';
 
 @UseGuards(JwtGuard)
 @Controller('post/:postId/tag')

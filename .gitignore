@@ -40,3 +40,7 @@ lerna-debug.log*
 # gcloud deployment
 app.yaml
 .gcloudignore
+
+key.pem
+cert.pem
+cloud_sql_proxy

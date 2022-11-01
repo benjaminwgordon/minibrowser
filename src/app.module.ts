@@ -12,6 +12,7 @@ import { PostTagModule } from './post-tag/post-tag.module';
 import { UserTagSubscriptionModule } from './user-tag-subscription/user-tag-subscription.module';
 import { RecipeModule } from './recipe/recipe.module';
 import { RecipeStepModule } from './recipe-step/recipe-step.module';
+import { Express } from 'express';
 
 @Module({
   imports: [

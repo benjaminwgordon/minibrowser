@@ -1,4 +1,5 @@
 import { IsNotEmpty, IsString, Length } from 'class-validator';
+import { Express } from 'express';
 
 export class CreatePostDto {
   @IsNotEmpty()

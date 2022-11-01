@@ -13,10 +13,10 @@ import {
 } from '@nestjs/common';
 import { PostService } from './post.service';
 import { CreatePostDto } from './dto/createPost.dto';
-import { GetUser } from 'src/auth/decorator';
 import { User } from '@prisma/client';
-import { JwtGuard } from 'src/auth/guard/jwt.guard';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { JwtGuard } from '../auth/guard/jwt.guard';
+import { GetUser } from '../auth/decorator';
 
 @Controller('post')
 @UseGuards(JwtGuard)
@@ -27,7 +27,7 @@ export class PostController {
   @UseInterceptors(FileInterceptor('image'))
   create(
     @GetUser() user: User,
-    @UploadedFile() file: Express.Multer.File,
+    @UploadedFile() file: any,
     @Body() createPostDto: CreatePostDto,
   ) {
     return this.postService.create(user, createPostDto, file);
@@ -57,14 +57,4 @@ export class PostController {
   findOne(@Param('id') id: string) {
     return this.postService.findOne(+id);
   }
-
-  // @Patch(':id')
-  // update(@Param('id') id: string, @Body() updatePostDto: UpdatePostDto) {
-  //   return this.postService.update(+id, updatePostDto);
-  // }
-
-  // @Delete(':id')
-  // remove(@Param('id') id: string) {
-  //   return this.postService.remove(+id);
-  // }
 }

@@ -8,7 +8,7 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
+  url      = "postgresql://minibrowser-db:saucy-emu@localhost/postgres?host=104.197.130.69"
 }
 
 model User {
