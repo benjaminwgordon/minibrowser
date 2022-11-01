@@ -66,37 +66,60 @@ export class AuthService {
     userEmail: string,
     confirmationCode: string,
   ) {
-    let mailOptions = {
-      from: process.env.MAIL_USERNAME,
-      to: userEmail,
+    const sgMail = require('@sendgrid/mail');
+    sgMail.setApiKey(process.env.GRID_KEY);
+
+    const msg = {
+      to: userEmail, // Change to your recipient
+      from: 'miniaturesbrowser@gmail.com', // Change to your verified sender
       subject: 'Confirm your MiniBrowser Account',
       text: `Welcome to MiniBrowser!
-      \n
-      Here is your activation code:\n
-      ${confirmationCode}`,
+      //   \n
+      //   Here is your activation code:\n
+      //   ${confirmationCode}`,
     };
 
-    const nodemailer = require('nodemailer');
+    sgMail
+      .send(msg)
+      .then((response) => {
+        console.log(response[0].statusCode);
+        console.log(response[0].headers);
+      })
+      .catch((error) => {
+        console.error(error);
+      });
 
-    let transporter = nodemailer.createTransport({
-      service: 'gmail',
-      auth: {
-        type: 'OAuth2',
-        user: process.env.MAIL_USERNAME,
-        pass: process.env.MAIL_PASSWORD,
-        clientId: process.env.OAUTH_CLIENTID,
-        clientSecret: process.env.OAUTH_CLIENT_SECRET,
-        refreshToken: process.env.OAUTH_REFRESH_TOKEN,
-      },
-    });
+    // let mailOptions = {
+    //   from: process.env.MAIL_USERNAME,
+    //   to: userEmail,
+    //   subject: 'Confirm your MiniBrowser Account',
+    //   text: `Welcome to MiniBrowser!
+    //   \n
+    //   Here is your activation code:\n
+    //   ${confirmationCode}`,
+    // };
 
-    transporter.sendMail(mailOptions, (err, data) => {
-      if (err) {
-        console.log({ err });
-      } else {
-        console.log({ msg: `Sent email successfully` });
-      }
-    });
+    // const nodemailer = require('nodemailer');
+
+    // let transporter = nodemailer.createTransport({
+    //   service: 'gmail',
+    //   auth: {
+    //     type: 'OAuth2',
+    //     user: process.env.MAIL_USERNAME,
+    //     pass: process.env.MAIL_PASSWORD,
+    //     clientId: process.env.OAUTH_CLIENTID,
+    //     clientSecret: process.env.OAUTH_CLIENT_SECRET,
+    //     refreshToken: process.env.OAUTH_REFRESH_TOKEN,
+    //   },
+    // });
+
+    // transporter.sendMail(mailOptions, (err, data) => {
+    //   if (err) {
+    //     console.log({ err });
+    //   } else {
+    //     console.log({ msg: `Sent email successfully` });
+    //   }
+    // });
   }
 
   // fired when a user clicks an email confirmation link.  If valid, converts the user from a pending user into a full user

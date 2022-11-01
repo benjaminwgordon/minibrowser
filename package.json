@@ -34,6 +34,7 @@
     "@nestjs/passport": "^9.0.0",
     "@nestjs/platform-express": "^9.1.6",
     "@prisma/client": "^4.2.1",
+    "@sendgrid/mail": "^7.7.0",
     "@types/nodemailer": "^6.4.6",
     "argon2": "^0.29.1",
     "aws-sdk": "^2.1218.0",
