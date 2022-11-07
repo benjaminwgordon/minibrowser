@@ -44,3 +44,10 @@ app.yaml
 key.pem
 cert.pem
 cloud_sql_proxy
+
+
+#build
+Dockerfile
+.prettierrc
+compose.yaml
+.dockerignore
