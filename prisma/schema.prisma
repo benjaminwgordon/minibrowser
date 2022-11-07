@@ -8,7 +8,7 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = "postgresql://minibrowser-db:saucy-emu@localhost/postgres?host=104.197.130.69"
+  url      = env("PRISMA_SCHEMA_CONN_URL")
 }
 
 model User {
