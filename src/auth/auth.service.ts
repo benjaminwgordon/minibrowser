@@ -88,38 +88,6 @@ export class AuthService {
       .catch((error) => {
         console.error(error);
       });
-
-    // let mailOptions = {
-    //   from: process.env.MAIL_USERNAME,
-    //   to: userEmail,
-    //   subject: 'Confirm your MiniBrowser Account',
-    //   text: `Welcome to MiniBrowser!
-    //   \n
-    //   Here is your activation code:\n
-    //   ${confirmationCode}`,
-    // };
-
-    // const nodemailer = require('nodemailer');
-
-    // let transporter = nodemailer.createTransport({
-    //   service: 'gmail',
-    //   auth: {
-    //     type: 'OAuth2',
-    //     user: process.env.MAIL_USERNAME,
-    //     pass: process.env.MAIL_PASSWORD,
-    //     clientId: process.env.OAUTH_CLIENTID,
-    //     clientSecret: process.env.OAUTH_CLIENT_SECRET,
-    //     refreshToken: process.env.OAUTH_REFRESH_TOKEN,
-    //   },
-    // });
-
-    // transporter.sendMail(mailOptions, (err, data) => {
-    //   if (err) {
-    //     console.log({ err });
-    //   } else {
-    //     console.log({ msg: `Sent email successfully` });
-    //   }
-    // });
   }
 
   // fired when a user clicks an email confirmation link.  If valid, converts the user from a pending user into a full user
