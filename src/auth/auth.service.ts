@@ -40,7 +40,7 @@ export class AuthService {
         },
         create: {
           email: dto.email,
-          username: dto.username,
+          username: dto.username.toLowerCase(),
           hash: hash,
           confirmationCode: confirmationCode,
         },
