@@ -51,6 +51,7 @@ Dockerfile
 .prettierrc
 compose.yaml
 .dockerignore
+Docker-Compose.yaml
 
 #vscode
 .vscode
