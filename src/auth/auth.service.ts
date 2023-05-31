@@ -1,34 +1,36 @@
 import {
+  ConflictException,
   ForbiddenException,
   HttpStatus,
   Injectable,
+  InternalServerErrorException,
   NotFoundException,
-} from '@nestjs/common';
-import { AuthDTO } from './dto/auth.dto';
-import * as argon from 'argon2';
-import { JwtService } from '@nestjs/jwt';
-import { pendingUser, User } from '@prisma/client';
-import { PrismaClientKnownRequestError } from '@prisma/client/runtime';
-import { ConfigService } from '@nestjs/config';
-import { AuthSignInDTO } from './dto/authSignIn.dto';
-import { Response, Request } from 'express';
-import jwt_decode from 'jwt-decode';
-import { AuthEmailValidationDto } from './dto/authEmailValidation.dto';
-import { PrismaService } from '../prisma/prisma.service';
+} from "@nestjs/common";
+import { AuthDTO } from "./dto/auth.dto";
+import * as argon from "argon2";
+import { JwtService } from "@nestjs/jwt";
+import { pendingUser, User } from "@prisma/client";
+import { PrismaClientKnownRequestError } from "@prisma/client/runtime";
+import { ConfigService } from "@nestjs/config";
+import { AuthSignInDTO } from "./dto/authSignIn.dto";
+import { Response, Request } from "express";
+import jwt_decode from "jwt-decode";
+import { AuthEmailValidationDto } from "./dto/authEmailValidation.dto";
+import { PrismaService } from "../prisma/prisma.service";
 
 @Injectable()
 export class AuthService {
   constructor(
     private prisma: PrismaService,
     private jwt: JwtService,
-    private config: ConfigService,
+    private config: ConfigService
   ) {}
 
   // creates a new pending user, adding them to the list of pending users awaiting email confirmation
   async signup(dto: AuthDTO) {
     const hash = await argon.hash(dto.password);
-    var crypto = require('crypto');
-    const confirmationCode = crypto.randomBytes(6).toString('hex');
+    var crypto = require("crypto");
+    const confirmationCode = crypto.randomBytes(6).toString("hex");
     try {
       const user: User = await this.prisma.pendingUser.upsert({
         where: {
@@ -53,9 +55,43 @@ export class AuthService {
     } catch (error) {
       if (error instanceof PrismaClientKnownRequestError) {
         // uniqueness constraint failed
-        if (error.code === 'P2002') {
-          throw new ForbiddenException('credentials taken');
+        if (error.code === "P2002") {
+          throw new ForbiddenException("credentials taken");
         }
+      }
+    }
+  }
+
+  // alternate path for user registration that skips the email verification.  Used only for local development environments that can't access the sendGrid API
+  async skipUserEmailValidationSignup(dto: AuthDTO) {
+    const hash = await argon.hash(dto.password);
+    var crypto = require("crypto");
+    const confirmationCode = crypto.randomBytes(6).toString("hex");
+
+    // check if the user already exists
+    const existingUser = await this.prisma.user.findUnique({
+      where: {
+        email: dto.email,
+      },
+    });
+
+    if (existingUser) {
+      throw new ConflictException("account with email address already exists");
+    } else {
+      try {
+        const addedUser = await this.prisma.user.create({
+          data: {
+            email: dto.email,
+            username: dto.username,
+            hash: hash,
+          },
+        });
+
+        return HttpStatus.ACCEPTED;
+      } catch {
+        throw new InternalServerErrorException(
+          "unknown error during user creation"
+        );
       }
     }
   }
@@ -64,15 +100,15 @@ export class AuthService {
   async sendConfirmationEmail(
     username: string,
     userEmail: string,
-    confirmationCode: string,
+    confirmationCode: string
   ) {
-    const sgMail = require('@sendgrid/mail');
+    const sgMail = require("@sendgrid/mail");
     sgMail.setApiKey(process.env.GRID_KEY);
 
     const msg = {
       to: userEmail, // Change to your recipient
-      from: 'miniaturesbrowser@gmail.com', // Change to your verified sender
-      subject: 'Confirm your MiniBrowser Account',
+      from: "miniaturesbrowser@gmail.com", // Change to your verified sender
+      subject: "Confirm your MiniBrowser Account",
       text: `Welcome to MiniBrowser!
          \n
          Here is your activation code:\n
@@ -93,21 +129,20 @@ export class AuthService {
   // fired when a user clicks an email confirmation link.  If valid, converts the user from a pending user into a full user
   async validateEmail(dto: AuthEmailValidationDto) {
     const { email, confirmationCode } = dto;
-    console.log({ dto });
     try {
       const user: pendingUser = await this.prisma.pendingUser.findUniqueOrThrow(
         {
           where: {
             email: email,
           },
-        },
+        }
       );
       console.log({
         serverCode: user.confirmationCode,
         clientCode: dto.confirmationCode,
       });
       if (user.confirmationCode !== confirmationCode) {
-        throw new ForbiddenException('Invalid code');
+        throw new ForbiddenException("Invalid code");
       } else {
         // remove user from PendingUsers and append to Users
         const removedUser = await this.prisma.pendingUser.delete({
@@ -138,28 +173,34 @@ export class AuthService {
       },
     });
 
-    console.log({ user });
-
     if (!user) {
-      throw new ForbiddenException('This account does not exist');
+      throw new ForbiddenException("This account does not exist");
     }
 
     const pwMatch = await argon.verify(user.hash, dto.password);
 
     if (!pwMatch) {
-      throw new ForbiddenException('Incorrect Credentials');
+      throw new ForbiddenException("Incorrect Credentials");
     }
 
-    const authToken = await this.signToken(user.id, user.email, '15m');
-    const refreshToken = await this.signToken(user.id, user.email, '30d');
+    const authToken = await this.signToken(user.id, user.email, "15m");
+    const refreshToken = await this.signToken(user.id, user.email, "30d");
 
     const future = new Date();
     future.setDate(future.getDate() + 30);
 
-    res.cookie('refreshToken', refreshToken, {
+    res.cookie("jwt", authToken, {
+      path: "/",
+      sameSite: "none",
       expires: future,
-      httpOnly: true,
-      secure: false,
+      secure: true,
+    });
+
+    res.cookie("refreshToken", refreshToken, {
+      path: "/",
+      sameSite: "none",
+      expires: future,
+      secure: true,
     });
 
     res.send({ access_token: authToken });
@@ -168,14 +209,14 @@ export class AuthService {
   async signToken(
     userId: number,
     email: string,
-    expiresIn: string,
+    expiresIn: string
   ): Promise<string> {
     const payload = {
       sub: userId,
       email,
     };
 
-    const secret = this.config.get('JWT_SECRET');
+    const secret = this.config.get("JWT_SECRET");
 
     const token = await this.jwt.signAsync(payload, {
       expiresIn,
@@ -186,11 +227,11 @@ export class AuthService {
   }
 
   async refreshToken(request: Request, response: Response) {
-    const priorRefreshToken = request.cookies['refreshToken'];
+    const priorRefreshToken = request.cookies["refreshToken"];
 
     if (!priorRefreshToken) {
       throw new ForbiddenException(
-        'refresh token not set, sign in again to continue',
+        "refresh token not set, sign in again to continue"
       );
     }
 
@@ -208,7 +249,7 @@ export class AuthService {
 
     if (currentTime > expirationTime) {
       throw new ForbiddenException(
-        'refresh token expired, sign in again to continue',
+        "refresh token expired, sign in again to continue"
       );
     }
 
@@ -223,16 +264,16 @@ export class AuthService {
 
     // if refreshToken is not expired and matches a valid user, issue a new authToken and refreshToken
     if (!user) {
-      throw new ForbiddenException('no user found matches this refresh token');
+      throw new ForbiddenException("no user found matches this refresh token");
     }
 
-    const newAuthToken = await this.signToken(user.id, user.email, '15m');
-    const newRefreshToken = await this.signToken(user.id, user.email, '30d');
+    const newAuthToken = await this.signToken(user.id, user.email, "15m");
+    const newRefreshToken = await this.signToken(user.id, user.email, "30d");
 
     const future = new Date();
     future.setDate(future.getDate() + 30);
 
-    response.cookie('refreshToken', newRefreshToken, {
+    response.cookie("refreshToken", newRefreshToken, {
       expires: future,
       httpOnly: true,
       secure: false,

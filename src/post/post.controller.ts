@@ -10,25 +10,26 @@ import {
   UseInterceptors,
   UploadedFile,
   Query,
-} from '@nestjs/common';
-import { PostService } from './post.service';
-import { CreatePostDto } from './dto/createPost.dto';
-import { User } from '@prisma/client';
-import { FileInterceptor } from '@nestjs/platform-express';
-import { JwtGuard } from '../auth/guard/jwt.guard';
-import { GetUser } from '../auth/decorator';
+  ParseIntPipe,
+} from "@nestjs/common";
+import { PostService } from "./post.service";
+import { CreatePostDto } from "./dto/createPost.dto";
+import { User } from "@prisma/client";
+import { FileInterceptor } from "@nestjs/platform-express";
+import { JwtGuard } from "../auth/guard/jwt.guard";
+import { GetUser } from "../auth/decorator";
 
-@Controller('post')
+@Controller("post")
 @UseGuards(JwtGuard)
 export class PostController {
   constructor(private readonly postService: PostService) {}
 
   @Post()
-  @UseInterceptors(FileInterceptor('image'))
+  @UseInterceptors(FileInterceptor("image"))
   create(
     @GetUser() user: User,
     @UploadedFile() file: any,
-    @Body() createPostDto: CreatePostDto,
+    @Body() createPostDto: CreatePostDto
   ) {
     return this.postService.create(user, createPostDto, file);
   }
@@ -36,25 +37,28 @@ export class PostController {
   @Get()
   findAll(
     @GetUser() user: User,
-    @Query('tagId') tagId,
-    @Query('subscribedTags') subscribedTags,
+    @Query("tagId") tagId,
+    @Query("subscribedTags") subscribedTags,
+    @Query("cursor", new ParseIntPipe()) cursor,
+    @Query("take", new ParseIntPipe()) take
   ) {
+    console.log({ cursor });
     if (tagId) {
       console.log({ tagId });
       console.log({ subscribedTags });
-      console.log('fetching one post by id');
-      return this.postService.findAllByTag(tagId);
+      console.log("fetching one post by id");
+      return this.postService.findAllByTag(tagId, cursor);
     } else if (subscribedTags) {
-      console.log('fetching all posts by subscribed tags');
-      return this.postService.findAllBySubscribedTags(user);
+      console.log("fetching all posts by subscribed tags");
+      return this.postService.findAllBySubscribedTags(user, cursor);
     } else {
-      console.log('fetching all posts');
-      return this.postService.findAll();
+      console.log("fetching all posts");
+      return this.postService.findAll(cursor, take);
     }
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
+  @Get(":id")
+  findOne(@Param("id") id: string) {
     return this.postService.findOne(+id);
   }
 }

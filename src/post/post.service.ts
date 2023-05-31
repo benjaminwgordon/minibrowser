@@ -1,9 +1,9 @@
-import { Injectable, NotFoundException, UseGuards } from '@nestjs/common';
-import { Post, User } from '@prisma/client';
-import { NotFoundError } from '@prisma/client/runtime';
-import { PrismaService } from '../prisma/prisma.service';
-import { CreatePostDto } from './dto/createPost.dto';
-import * as argon from 'argon2';
+import { Injectable, NotFoundException, UseGuards } from "@nestjs/common";
+import { Post, User } from "@prisma/client";
+import { NotFoundError } from "@prisma/client/runtime";
+import { PrismaService } from "../prisma/prisma.service";
+import { CreatePostDto } from "./dto/createPost.dto";
+import * as argon from "argon2";
 
 @Injectable()
 export class PostService {
@@ -12,7 +12,7 @@ export class PostService {
   async create(user: User, dto: CreatePostDto, file: any): Promise<Post> {
     // first, try to upload file to s3, if this fails do not create the associated entry in the database
 
-    const AWS = require('aws-sdk');
+    const AWS = require("aws-sdk");
     const s3 = new AWS.S3({
       accessKeyId: process.env.AWS_S3_ACCESS_KEY_ID,
       secretAccessKey: process.env.AWS_S3_SECRET_ACCESS_KEY,
@@ -44,15 +44,22 @@ export class PostService {
       });
       return post;
     } else {
-      throw new Error('unable to upload image');
+      throw new Error("unable to upload image");
     }
   }
 
   // TODO: paginate for performance
   async findAll(
-    tagId?: number,
+    cursor: number,
+    take?: number
   ): Promise<(Post & { author: { username: string; id: number } })[]> {
+    console.log({ take });
     const posts = await this.prisma.post.findMany({
+      take: take || 1,
+      skip: 1,
+      cursor: {
+        id: cursor,
+      },
       select: {
         id: true,
         title: true,
@@ -66,20 +73,27 @@ export class PostService {
           },
         },
       },
-      orderBy: {
-        id: 'desc',
-      },
+      // orderBy: {
+      //   id: "desc",
+      // },
     });
+    console.log({ posts }, posts.length);
     return posts;
   }
 
   async findAllByTag(
-    tagId?: number,
+    tagId: number,
+    cursor: number
   ): Promise<(Post & { author: { username: string; id: number } })[]> {
-    if (typeof tagId === 'string') {
+    if (typeof tagId === "string") {
       tagId = parseInt(tagId);
     }
     const posts = await this.prisma.post.findMany({
+      take: 4,
+      skip: 1,
+      cursor: {
+        id: cursor,
+      },
       include: {
         TagsOnPosts: true,
         author: true,
@@ -97,6 +111,7 @@ export class PostService {
 
   async findAllBySubscribedTags(
     user: User,
+    cursor: number
   ): Promise<(Post & { author: { username: string; id: number } })[]> {
     const userSubscribedTags = await this.prisma.userTagSubscriptions.findMany({
       where: {
@@ -110,6 +125,11 @@ export class PostService {
     const userSubscribedTagIds = userSubscribedTags.map((tag) => tag.tagId);
 
     const postsBySubscribedTags = this.prisma.post.findMany({
+      take: 4,
+      skip: 0,
+      cursor: {
+        id: cursor,
+      },
       where: {
         TagsOnPosts: {
           some: {
@@ -151,7 +171,7 @@ export class PostService {
       return post;
     } catch (error) {
       if (error instanceof NotFoundError) {
-        throw new NotFoundException('no posts exist with id');
+        throw new NotFoundException("no posts exist with id");
       }
     }
   }
