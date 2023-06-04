@@ -46,4 +46,9 @@ export class AuthController {
   refreshToken(@Req() request: Request, @Res() response: Response) {
     return this.AuthService.refreshToken(request, response);
   }
+
+  @Get("logout")
+  logout(@Req() request: Request, @Res() response: Response) {
+    return this.AuthService.logout(request, response);
+  }
 }

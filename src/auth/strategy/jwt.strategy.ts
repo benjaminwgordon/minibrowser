@@ -13,7 +13,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       secretOrKey: config.get("JWT_SECRET"),
       jwtFromRequest: ExtractJwt.fromExtractors([
         (request: Request) => {
-          let extractedJwt = request?.headers["authorization"].split(" ")[1];
+          let extractedJwt = request?.cookies["jwt"];
           if (!extractedJwt) {
             return null;
           }
@@ -24,6 +24,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   }
 
   async validate(payload: any) {
+    console.log({ payload });
     const user = await this.prisma.user.findUnique({
       where: {
         id: payload.sub,

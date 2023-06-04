@@ -17,6 +17,7 @@ import { Response, Request } from "express";
 import jwt_decode from "jwt-decode";
 import { AuthEmailValidationDto } from "./dto/authEmailValidation.dto";
 import { PrismaService } from "../prisma/prisma.service";
+import { STATUS_CODES } from "node:http";
 
 @Injectable()
 export class AuthService {
@@ -273,12 +274,42 @@ export class AuthService {
     const future = new Date();
     future.setDate(future.getDate() + 30);
 
-    response.cookie("refreshToken", newRefreshToken, {
+    response.cookie("jwt", newAuthToken, {
+      path: "/",
+      sameSite: "none",
       expires: future,
-      httpOnly: true,
-      secure: false,
+      secure: true,
+    });
+
+    response.cookie("refreshToken", newRefreshToken, {
+      path: "/",
+      sameSite: "none",
+      expires: future,
+      secure: true,
     });
 
     response.send({ access_token: newAuthToken });
+  }
+
+  async logout(request: Request, response: Response) {
+    console.log("logout request");
+    const past = new Date();
+    past.setDate(past.getDate() - 300);
+
+    response.cookie("jwt", "", {
+      path: "/",
+      sameSite: "none",
+      expires: past,
+      secure: true,
+    });
+
+    response.cookie("refreshToken", "", {
+      path: "/",
+      sameSite: "none",
+      expires: past,
+      secure: true,
+    });
+
+    response.status(200).send({ msg: "Logged out" });
   }
 }
