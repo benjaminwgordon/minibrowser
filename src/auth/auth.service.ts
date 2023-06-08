@@ -4,7 +4,6 @@ import {
   HttpStatus,
   Injectable,
   InternalServerErrorException,
-  NotFoundException,
 } from "@nestjs/common";
 import { AuthDTO } from "./dto/auth.dto";
 import * as argon from "argon2";
