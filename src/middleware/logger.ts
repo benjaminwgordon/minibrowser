@@ -6,11 +6,14 @@ import { request } from "http";
 export class LoggerMiddleware implements NestMiddleware {
   use(req: Request, res: Response, next: NextFunction) {
     // Gets the request log
-    console.log(`req:`, {
-      //headers: req.headers,
-      body: req.body,
-      originalUrl: req.originalUrl,
-    });
+    //ignore health check requests in logging statements
+    if (req.originalUrl !== "/") {
+      console.log(`req:`, {
+        //headers: req.headers,
+        body: req.body,
+        originalUrl: req.originalUrl,
+      });
+    }
     // Ends middleware function execution, hence allowing to move on
     if (next) {
       next();

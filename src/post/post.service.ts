@@ -12,6 +12,10 @@ export class PostService {
   async create(user: User, dto: CreatePostDto, file: any): Promise<Post> {
     // first, try to upload file to s3, if this fails do not create the associated entry in the database
 
+    console.log(
+      `Attempting to register aws-sdk with credentials:\n  accessKeyID: ${process.env.AWS_S3_ACCESS_KEY_ID}\n  SecretKey: ${process.env.AWS_S3_SECRET_ACCESS_KEY}`
+    );
+
     const AWS = require("aws-sdk");
     const s3 = new AWS.S3({
       accessKeyId: process.env.AWS_S3_ACCESS_KEY_ID,
