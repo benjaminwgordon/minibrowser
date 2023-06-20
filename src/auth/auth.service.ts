@@ -34,14 +34,14 @@ export class AuthService {
     try {
       const user: User = await this.prisma.pendingUser.upsert({
         where: {
-          email: dto.email,
+          email: dto.email.toLowerCase(),
         },
         update: {
           confirmationCode: confirmationCode,
           hash,
         },
         create: {
-          email: dto.email,
+          email: dto.email.toLowerCase(),
           username: dto.username.toLowerCase(),
           hash: hash,
           confirmationCode: confirmationCode,
@@ -71,7 +71,7 @@ export class AuthService {
     // check if the user already exists
     const existingUser = await this.prisma.user.findUnique({
       where: {
-        email: dto.email,
+        email: dto.email.toLowerCase(),
       },
     });
 
@@ -81,7 +81,7 @@ export class AuthService {
       try {
         const addedUser = await this.prisma.user.create({
           data: {
-            email: dto.email,
+            email: dto.email.toLowerCase(),
             username: dto.username,
             hash: hash,
           },
@@ -133,7 +133,7 @@ export class AuthService {
       const user: pendingUser = await this.prisma.pendingUser.findUniqueOrThrow(
         {
           where: {
-            email: email,
+            email: email.toLowerCase(),
           },
         }
       );
@@ -153,7 +153,7 @@ export class AuthService {
 
         const addedUser = await this.prisma.user.create({
           data: {
-            email: removedUser.email,
+            email: removedUser.email.toLowerCase(),
             username: removedUser.username,
             hash: removedUser.hash,
           },
@@ -169,7 +169,7 @@ export class AuthService {
   async signin(dto: AuthSignInDTO, res: Response) {
     const user = await this.prisma.user.findUnique({
       where: {
-        email: dto.email,
+        email: dto.email.toLowerCase(),
       },
     });
 
@@ -183,8 +183,16 @@ export class AuthService {
       throw new ForbiddenException("Incorrect Credentials");
     }
 
-    const authToken = await this.signToken(user.id, user.email, "15m");
-    const refreshToken = await this.signToken(user.id, user.email, "30d");
+    const authToken = await this.signToken(
+      user.id,
+      user.email.toLowerCase(),
+      "15m"
+    );
+    const refreshToken = await this.signToken(
+      user.id,
+      user.email.toLowerCase(),
+      "30d"
+    );
 
     const future = new Date();
     future.setDate(future.getDate() + 30);
@@ -213,7 +221,7 @@ export class AuthService {
   ): Promise<string> {
     const payload = {
       sub: userId,
-      email,
+      email: email.toLowerCase(),
     };
 
     const secret = this.config.get("JWT_SECRET");
@@ -241,7 +249,7 @@ export class AuthService {
     }
 
     const decodedRefreshToken = jwt_decode(priorRefreshToken) as IJwt;
-    const userEmail = decodedRefreshToken.email;
+    const userEmail = decodedRefreshToken.email.toLowerCase();
     const expirationTime = parseInt(decodedRefreshToken.exp);
 
     const date = new Date();
@@ -254,7 +262,7 @@ export class AuthService {
     }
 
     const user = await this.prisma.user.findUnique({
-      where: { email: userEmail },
+      where: { email: userEmail.toLowerCase() },
       select: {
         id: true,
         username: true,
@@ -267,8 +275,16 @@ export class AuthService {
       throw new ForbiddenException("no user found matches this refresh token");
     }
 
-    const newAuthToken = await this.signToken(user.id, user.email, "15m");
-    const newRefreshToken = await this.signToken(user.id, user.email, "30d");
+    const newAuthToken = await this.signToken(
+      user.id,
+      user.email.toLowerCase(),
+      "15m"
+    );
+    const newRefreshToken = await this.signToken(
+      user.id,
+      user.email.toLowerCase(),
+      "30d"
+    );
 
     const future = new Date();
     future.setDate(future.getDate() + 30);
