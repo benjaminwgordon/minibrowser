@@ -1,18 +1,27 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { TagService } from './tag.service';
+import { Test, TestingModule } from "@nestjs/testing";
+import { TagService } from "./tag.service";
+import { PrismaService } from "../prisma/prisma.service";
 
-describe('TagService', () => {
+describe("TagService", () => {
   let service: TagService;
+
+  const mockDB = {};
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [TagService],
+      providers: [
+        TagService,
+        {
+          provide: PrismaService,
+          useValue: mockDB,
+        },
+      ],
     }).compile();
 
     service = module.get<TagService>(TagService);
   });
 
-  it('should be defined', () => {
+  it("should be defined", () => {
     expect(service).toBeDefined();
   });
 });

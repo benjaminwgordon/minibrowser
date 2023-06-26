@@ -1,8 +1,8 @@
-import { ValidationPipe } from '@nestjs/common';
-import { NestFactory } from '@nestjs/core';
-import { AppModule } from './app.module';
-import * as cookieParser from 'cookie-parser';
-import * as fs from 'node:fs';
+import { ValidationPipe } from "@nestjs/common";
+import { NestFactory } from "@nestjs/core";
+import { AppModule } from "./app.module";
+import * as cookieParser from "cookie-parser";
+import * as fs from "node:fs";
 
 //TODO: gmail OAUTH refresh
 //
@@ -14,12 +14,12 @@ async function bootstrap() {
     new ValidationPipe({
       whitelist: false,
       transform: true,
-    }),
+    })
   );
   app.enableCors({
     origin: true,
     credentials: true,
-    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
     preflightContinue: false,
     optionsSuccessStatus: 204,
   });

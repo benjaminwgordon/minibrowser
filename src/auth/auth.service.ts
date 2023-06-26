@@ -16,7 +16,6 @@ import { Response, Request } from "express";
 import jwt_decode from "jwt-decode";
 import { AuthEmailValidationDto } from "./dto/authEmailValidation.dto";
 import { PrismaService } from "../prisma/prisma.service";
-import { STATUS_CODES } from "node:http";
 
 @Injectable()
 export class AuthService {
@@ -32,7 +31,7 @@ export class AuthService {
     var crypto = require("crypto");
     const confirmationCode = crypto.randomBytes(6).toString("hex");
     try {
-      const user: User = await this.prisma.pendingUser.upsert({
+      const user: pendingUser = await this.prisma.pendingUser.upsert({
         where: {
           email: dto.email.toLowerCase(),
         },
@@ -51,12 +50,15 @@ export class AuthService {
       this.sendConfirmationEmail(dto.username, dto.email, confirmationCode);
 
       delete user.hash;
+      delete user.confirmationCode;
       return user;
     } catch (error) {
       if (error instanceof PrismaClientKnownRequestError) {
         // uniqueness constraint failed
         if (error.code === "P2002") {
           throw new ForbiddenException("credentials taken");
+        } else {
+          console.log(`Unexpected Error: ${error}`);
         }
       }
     }
@@ -79,7 +81,7 @@ export class AuthService {
       throw new ConflictException("account with email address already exists");
     } else {
       try {
-        const addedUser = await this.prisma.user.create({
+        const addedUser: User = await this.prisma.user.create({
           data: {
             email: dto.email.toLowerCase(),
             username: dto.username,

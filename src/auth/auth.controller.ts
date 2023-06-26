@@ -13,16 +13,20 @@ import { AuthService } from "./auth.service";
 import { AuthSignInDTO } from "./dto/authSignIn.dto";
 import { Response, Request } from "express";
 import { AuthEmailValidationDto } from "./dto/authEmailValidation.dto";
+import { ConfigService } from "@nestjs/config";
 
 @Controller("auth")
 export class AuthController {
-  constructor(private AuthService: AuthService) {}
+  constructor(
+    private AuthService: AuthService,
+    private ConfigService: ConfigService
+  ) {}
 
   @Post("signup")
   signup(@Body() dto: AuthDTO) {
     // user registration service differs depending on prod vs dev environments
     // (no email verification for accounts created on dev environment)
-    const ENV = process.env.NODE_ENV;
+    const ENV = this.ConfigService.get<string>("NODE_ENV");
     if (ENV == "production") {
       return this.AuthService.signup(dto);
     } else {
