@@ -5,6 +5,7 @@ import { JwtStrategy } from "./strategy/jwt.strategy";
 import { JwtModule, JwtService } from "@nestjs/jwt";
 import { ConfigService } from "@nestjs/config";
 import { pendingUser } from "@prisma/client";
+import { AuthDTO } from "./dto/auth.dto";
 
 describe("AuthService", () => {
   let service: AuthService;
@@ -22,7 +23,7 @@ describe("AuthService", () => {
     PrismaUpsertResult: {
       id: 0,
       email: "test@email.com",
-      username: "TestyMcTestface",
+      username: "testymctestface",
       hash: "mockHash",
       confirmationCode: "mockConfirmationCode",
     },
@@ -31,14 +32,37 @@ describe("AuthService", () => {
     Stripped: {
       id: 0,
       email: "test@email.com",
-      username: "TestyMcTestface",
+      username: "testymctestface",
     },
+  };
+
+  type pendingUserUpsertArgs = {
+    where: {
+      email: string;
+    };
+    update: {
+      confirmationCode: any;
+      hash: string;
+    };
+    create: {
+      email: string;
+      username: string;
+      hash: string;
+      confirmationCode: any;
+    };
   };
 
   const mockDB = {
     pendingUser: {
-      upsert: jest.fn(() => {
-        return pendingUserMocks.PrismaUpsertResult;
+      // replace pending user upserts with a mock that only cares about email and usernames for checking behavior when a uniqueness constraint would be violated
+      upsert: jest.fn((args: pendingUserUpsertArgs): pendingUser => {
+        return {
+          id: 0,
+          email: args.where.email,
+          username: args.create.username,
+          hash: args.create.hash,
+          confirmationCode: args.create.confirmationCode,
+        };
       }),
     },
   };
@@ -95,7 +119,35 @@ describe("AuthService", () => {
     });
   });
 
-  it("should throw an exception if two users with the same email try to sign up", () => {
-    expect(service);
+  it("email addresses should not be case sensitive", async () => {
+    // sign up user with lowercase email address
+    const user1 = await service.signup({
+      email: "casesensitiveemail@gmail.com",
+      password: "fakePassword1",
+      username: "username1",
+    });
+    // sign up user with uppercase email address
+    const user2 = await service.signup({
+      email: "CASESENSITIVEEMAIL@gmail.com",
+      password: "fakePassword1",
+      username: "username2",
+    });
+    expect(user1.email).toEqual(user2.email);
+  });
+
+  it("usernames should not be case sensitive", async () => {
+    // sign up user with lowercase username
+    const user1 = await service.signup({
+      email: "casesensitiveemail@gmail.com",
+      password: "fakePassword1",
+      username: "username1",
+    });
+    // sign up user with uppercase username
+    const user2 = await service.signup({
+      email: "CASESENSITIVEEMAIL@gmail.com",
+      password: "fakePassword1",
+      username: "USERNAME1",
+    });
+    expect(user1.username).toEqual(user2.username);
   });
 });
