@@ -76,8 +76,51 @@ model Recipe {
 
 // recipeSteps
 model RecipeStep {
-  id          Int    @id @default(autoincrement())
-  recipeId    Int
-  recipe      Recipe @relation(fields: [recipeId], references: [id])
-  instruction String
+  id Int @id @default(autoincrement())
+
+  recipe   Recipe @relation(fields: [recipeId], references: [id])
+  recipeId Int
+
+  // special notes for this recipe step (e.g. "two thin coats")
+  notes String
+
+  // the technique used in this step (e.g. "base, layer, edge highlight")
+  technique   Technique @relation(fields: [techniqueId], references: [id])
+  techniqueId Int
+
+  // the paint used in this step (e.g. "Abaddon Black")
+  paint   Paint @relation(fields: [paintId], references: [id])
+  paintId Int
+
+  // the tool used in this step (e.g. "base brush, dry brush")
+  tool   Tool @relation(fields: [toolId], references: [id])
+  toolId Int
+}
+
+// paints
+model Paint {
+  id         Int          @id @default(autoincrement())
+  name       String       @unique
+  hexColor   String       @db.Char(6)
+  RecipeStep RecipeStep[]
+
+  @@map("paint")
+}
+
+model Tool {
+  id         Int          @id @default(autoincrement())
+  name       String       @unique
+  iconSVG    String
+  RecipeStep RecipeStep[]
+
+  @@map("tool")
+}
+
+model Technique {
+  id         Int          @id @default(autoincrement())
+  name       String       @unique
+  iconSVG    String
+  RecipeStep RecipeStep[]
+
+  @@map("technique")
 }

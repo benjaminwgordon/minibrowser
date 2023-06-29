@@ -20,8 +20,9 @@
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
-    "start:db:dev": "npm run db:dev:restart && npx prisma migrate dev",
-    "db:dev:restart": "docker compose down && docker-compose up -d"
+    "start:db:dev": "export NODE_ENV=dev && npm run db:dev:restart && dotenv -e .env.dev -- npx prisma migrate dev",
+    "db:dev:restart": "export NODE_ENV=dev && docker compose down && docker-compose up -d",
+    "db:dev:seed": "dotenv -e .env.dev -- npx prisma db seed"
   },
   "dependencies": {
     "@golevelup/ts-jest": "^0.3.7",
@@ -66,6 +67,7 @@
     "@types/supertest": "^2.0.11",
     "@typescript-eslint/eslint-plugin": "^5.0.0",
     "@typescript-eslint/parser": "^5.0.0",
+    "dotenv-cli": "^7.2.1",
     "eslint": "^8.0.1",
     "eslint-config-prettier": "^8.3.0",
     "eslint-plugin-prettier": "^4.0.0",
@@ -99,5 +101,8 @@
     "coverageDirectory": "../coverage",
     "testEnvironment": "node"
   },
-  "gcp-build": "npm run build"
+  "gcp-build": "npm run build",
+  "prisma": {
+    "seed": "ts-node prisma/seed.ts"
+  }
 }
