@@ -13,6 +13,7 @@ import { UserTagSubscriptionModule } from "./user-tag-subscription/user-tag-subs
 import { RecipeModule } from "./recipe/recipe.module";
 import { RecipeStepModule } from "./recipe-step/recipe-step.module";
 import { LoggerMiddleware } from "./middleware/logger";
+import { PaintModule } from './paint/paint.module';
 
 // conditionally load dev or prod environment variable files
 const ENV = process.env.NODE_ENV;
@@ -35,6 +36,7 @@ console.log({ envPath });
     UserTagSubscriptionModule,
     RecipeModule,
     RecipeStepModule,
+    PaintModule,
   ],
   controllers: [AppController],
   providers: [AppService, PrismaService],
