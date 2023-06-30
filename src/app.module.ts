@@ -14,6 +14,7 @@ import { RecipeModule } from "./recipe/recipe.module";
 import { RecipeStepModule } from "./recipe-step/recipe-step.module";
 import { LoggerMiddleware } from "./middleware/logger";
 import { PaintModule } from './paint/paint.module';
+import { ToolModule } from './tool/tool.module';
 
 // conditionally load dev or prod environment variable files
 const ENV = process.env.NODE_ENV;
@@ -37,6 +38,7 @@ console.log({ envPath });
     RecipeModule,
     RecipeStepModule,
     PaintModule,
+    ToolModule,
   ],
   controllers: [AppController],
   providers: [AppService, PrismaService],
