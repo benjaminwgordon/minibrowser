@@ -1,12 +1,31 @@
-import { IsArray, IsNotEmpty, IsString, Length } from 'class-validator';
+import {
+  IsInt,
+  IsNotEmpty,
+  IsNumber,
+  IsPositive,
+  Length,
+} from "class-validator";
 
-export class SingleRecipeStepDto {
+export default class RecipeStepDto {
   @IsNotEmpty()
-  @IsString()
-  @Length(2, 80)
-  instruction: string;
-}
+  @IsNumber()
+  @IsPositive()
+  @IsInt()
+  paintId: number;
 
-export class CreateRecipeStepsDto {
-  steps: SingleRecipeStepDto[];
+  @IsNotEmpty()
+  @IsNumber()
+  @IsPositive()
+  @IsInt()
+  toolId: number;
+
+  @IsNotEmpty()
+  @IsNumber()
+  @IsPositive()
+  @IsInt()
+  techniqueId: number;
+
+  @IsNotEmpty()
+  @Length(0, 80)
+  instruction: string;
 }

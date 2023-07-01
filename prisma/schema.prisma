@@ -82,7 +82,7 @@ model RecipeStep {
   recipeId Int
 
   // special notes for this recipe step (e.g. "two thin coats")
-  notes String
+  instruction String
 
   // the technique used in this step (e.g. "base, layer, edge highlight")
   technique   Technique @relation(fields: [techniqueId], references: [id])
