@@ -73,6 +73,22 @@ describe("RecipeStepService", () => {
           return mockRecipeStep;
         }
       ),
+      delete: jest.fn((args: { where: { id: number } }) => {
+        // simulate deleting recipeStep that doesnt exist
+        if (args.where.id === -1) {
+          throw new NotFoundError("No recipeStep exists with this id");
+        } else {
+          const deletedRecipeStep: RecipeStep = {
+            id: 2,
+            recipeId: 1,
+            instruction: "mock instruction",
+            techniqueId: 2,
+            paintId: 3,
+            toolId: 5,
+          };
+          return deletedRecipeStep;
+        }
+      }),
     },
     paint: {
       findUniqueOrThrow: jest.fn((args: { where: { id: number } }) => {
@@ -205,6 +221,23 @@ describe("RecipeStepService", () => {
         techniqueId: 6,
         recipeId: 5,
         instruction: "mock instructions",
+      });
+    });
+  });
+
+  describe("DELETE ONE", () => {
+    it("Should throw a 404 on attempt to delete a recipe step that doesnt exist", async () => {
+      await expect(service.remove(-1)).rejects.toThrow(NotFoundException);
+    });
+
+    it("Should return the deleted recipeStep if request is valid", async () => {
+      await expect(service.remove(1)).resolves.toStrictEqual({
+        id: 2,
+        recipeId: 1,
+        instruction: "mock instruction",
+        techniqueId: 2,
+        paintId: 3,
+        toolId: 5,
       });
     });
   });

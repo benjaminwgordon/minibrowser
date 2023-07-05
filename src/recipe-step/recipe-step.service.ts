@@ -7,6 +7,7 @@ import {
 import { Prisma, RecipeStep, User } from "@prisma/client";
 import { PrismaService } from "../prisma/prisma.service";
 import CreateRecipeStepDto from "./dto/create-recipe-steps.dto";
+import { NotFoundError } from "@prisma/client/runtime";
 
 @Injectable()
 export class RecipeStepService {
@@ -87,7 +88,7 @@ export class RecipeStepService {
     }
   }
 
-  async findAll(recipeId: number): Promise<RecipeStep[]> {
+  async findAllStepsFromRecipe(recipeId: number): Promise<RecipeStep[]> {
     const allSteps = await this.prisma.recipeStep.findMany({
       where: {
         recipeId: recipeId,
@@ -96,15 +97,27 @@ export class RecipeStepService {
     return allSteps;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} recipeStep`;
-  }
-
+  // TODO: consider implementing updates on existing recipe steps
   // update(id: number, updateRecipeStepDto: UpdateRecipeStepDto) {
   //   return `This action updates a #${id} recipeStep`;
   // }
 
-  remove(id: number) {
-    return `This action removes a #${id} recipeStep`;
+  async remove(id: number) {
+    try {
+      const removedStep = this.prisma.recipeStep.delete({
+        where: {
+          id,
+        },
+      });
+      return removedStep;
+    } catch (err) {
+      if (err instanceof NotFoundError) {
+        throw new NotFoundException("No post exists to delete with id");
+      } else {
+        throw new InternalServerErrorException(
+          "unknown error while deleting recipe step"
+        );
+      }
+    }
   }
 }

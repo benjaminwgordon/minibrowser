@@ -30,7 +30,7 @@ export class RecipeStepController {
 
   @Get()
   findAll(@Param("recipeId", ParseIntPipe) recipeId: number) {
-    return this.recipeStepService.findAll(recipeId);
+    return this.recipeStepService.findAllStepsFromRecipe(recipeId);
   }
 
   @Delete(":id")
