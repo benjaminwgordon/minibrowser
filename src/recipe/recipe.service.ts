@@ -1,39 +1,43 @@
-import { Injectable } from '@nestjs/common';
-import { Recipe } from '@prisma/client';
-import { PrismaService } from '../prisma/prisma.service';
-import { CreateRecipeWithStepsDto } from './dto/create-recipe.dto';
+import {
+  Injectable,
+  InternalServerErrorException,
+  NotFoundException,
+} from "@nestjs/common";
+import { Recipe } from "@prisma/client";
+import { PrismaService } from "../prisma/prisma.service";
+import { CreateRecipeWithoutStepsDTO } from "./dto/create-recipe.dto";
+import { NotFoundError } from "@prisma/client/runtime";
 
 @Injectable()
 export class RecipeService {
   constructor(private prisma: PrismaService) {}
 
+  // creates a new Recipe for a specific feature on a model
+  // does not include any recipeSteps (they are added later)
   async create(
     postId: number,
-    createRecipeWithStepsDto: CreateRecipeWithStepsDto,
+    createRecipeWithoutStepsDto: CreateRecipeWithoutStepsDTO
   ): Promise<any> {
-    // THIS IS SLOW, but prisma but not yet support nested writes with createMany
-    const allRecipesWithSteps = await Promise.all(
-      createRecipeWithStepsDto.recipes.map(async (recipe) => {
-        const { recipeFor, steps } = recipe;
-        const recipeWithSteps = await this.prisma.recipe.create({
-          data: {
-            post: {
-              connect: { id: postId },
-            },
-            recipeFor,
-            RecipeStep: {
-              create: steps,
-            },
+    try {
+      const recipeWithoutSteps = await this.prisma.recipe.create({
+        data: {
+          post: {
+            connect: { id: postId },
           },
-          include: {
-            RecipeStep: true,
-          },
-        });
-        return recipeWithSteps;
-      }),
-    );
-    console.log({ allRecipesWithSteps });
-    return allRecipesWithSteps;
+          recipeFor: createRecipeWithoutStepsDto.recipeFor,
+        },
+      });
+      return recipeWithoutSteps;
+    } catch (err) {
+      if (err instanceof NotFoundError) {
+        throw new NotFoundException(`No post exists with id ${postId}`);
+      } else {
+        console.log({ err });
+        throw new InternalServerErrorException(
+          "unknown error while creating recipe"
+        );
+      }
+    }
   }
 
   async findAll(postId: number) {

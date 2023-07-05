@@ -30,8 +30,6 @@ export class RecipeStepService {
       },
     });
 
-    console.log({ recipe });
-
     if (!recipe) {
       throw new NotFoundException("No recipe exists with this id");
     }
