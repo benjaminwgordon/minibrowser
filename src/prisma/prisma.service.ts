@@ -15,7 +15,7 @@ export class PrismaService extends PrismaClient {
     super({
       datasources: {
         db: {
-          url: process.env.DB_CONNECTION_STRING,
+          url: config.get("DB_CONNECTION_STRING"),
         },
       },
     });
@@ -23,6 +23,12 @@ export class PrismaService extends PrismaClient {
 
   async onModuleInit() {
     await this.$connect();
+
+    console.log(this.config);
+
+    console.log(
+      `Connected to database at: ${process.env.DB_CONNECTION_STRING}`
+    );
 
     this.$on("query" as any, async (e: any) => {
       this.logger.debug(`(${e.duration}ms) ${e.query}`);

@@ -8,31 +8,31 @@ import {
   Delete,
   ParseIntPipe,
   UseGuards,
-} from '@nestjs/common';
-import { RecipeService } from './recipe.service';
-import { CreateRecipeWithStepsDto } from './dto/create-recipe.dto';
-import { JwtGuard } from '../auth/guard/jwt.guard';
+} from "@nestjs/common";
+import { RecipeService } from "./recipe.service";
+import { CreateRecipeWithoutStepsDTO } from "./dto/create-recipe.dto";
+import { JwtGuard } from "../auth/guard/jwt.guard";
 
 @UseGuards(JwtGuard)
-@Controller('/post/:postId/recipe')
+@Controller("/post/:postId/recipe")
 export class RecipeController {
   constructor(private readonly recipeService: RecipeService) {}
 
   @Post()
   create(
-    @Param('postId', ParseIntPipe) postId: number,
-    @Body() createRecipeWithStepsDto: CreateRecipeWithStepsDto,
+    @Param("postId", ParseIntPipe) postId: number,
+    @Body() createRecipeWithoutStepsDTO: CreateRecipeWithoutStepsDTO
   ) {
-    return this.recipeService.create(postId, createRecipeWithStepsDto);
+    return this.recipeService.create(postId, createRecipeWithoutStepsDTO);
   }
 
   @Get()
-  findAll(@Param('postId', ParseIntPipe) postId: number) {
+  findAll(@Param("postId", ParseIntPipe) postId: number) {
     return this.recipeService.findAll(postId);
   }
 
-  @Get(':id')
-  findOne(@Param('id', ParseIntPipe) id: string) {
+  @Get(":id")
+  findOne(@Param("id", ParseIntPipe) id: string) {
     return this.recipeService.findOne(+id);
   }
 
